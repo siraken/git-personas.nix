@@ -22,7 +22,7 @@ let
     name = "git-clients-include";
     runtimeInputs = [
       pkgs.jq
-      pkgs.yj
+      pkgs.yq-go
     ];
     text = ''
       usage="usage: git-clients-include <clients.toml> <out.gitconfig> <repos-root> <config-dir>"
@@ -38,7 +38,7 @@ let
       {
         echo "# Generated from $clients by home-manager activation. Do not edit."
         if [ -r "$clients" ]; then
-          yj -tj <"$clients" | jq -r --arg root "$root" --arg cfgdir "$cfgdir" '
+          yq -p toml -o json "$clients" | jq -r --arg root "$root" --arg cfgdir "$cfgdir" '
             (.gitClients // []) as $clients
             | ([$clients[] | (.credentialHosts // [])[]] | unique) as $hosts
             | (
@@ -65,7 +65,7 @@ let
     name = "git-clients-envrc";
     runtimeInputs = [
       pkgs.jq
-      pkgs.yj
+      pkgs.yq-go
       pkgs.coreutils
     ];
     text = ''
@@ -96,7 +96,7 @@ let
           printf '%s' "$body" | base64 -d
           echo
         } >"$envrc"
-      done < <(yj -tj <"$clients" | jq -r '
+      done < <(yq -p toml -o json "$clients" | jq -r '
         (.gitClients // [])[]
         | select(.env)
         | [.dir, ((.env | to_entries | map("export \(.key)=\"\(.value)\"") | join("\n")) | @base64)]
