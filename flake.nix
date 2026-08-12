@@ -1,5 +1,5 @@
 {
-  description = "home-manager module for per-client git configuration, generated at activation time";
+  description = "home-manager module for per-persona git configuration, generated at activation time";
 
   inputs = {
     nixpkgs = {
@@ -31,8 +31,8 @@
       # `import`ed rather than passed as a path: `nix flake check` requires a
       # module output to be a function or an attribute set.
       homeModules = {
-        default = import ./modules/git-clients.nix;
-        gitClients = import ./modules/git-clients.nix;
+        default = import ./modules/git-personas.nix;
+        gitPersonas = import ./modules/git-personas.nix;
       };
 
       checks = forAllSystems (
@@ -57,9 +57,9 @@
 
                   programs.git.enable = true;
 
-                  programs.gitClients = {
+                  programs.gitPersonas = {
                     enable = true;
-                    clientsFile = "/nonexistent/clients.json";
+                    personasFile = "/nonexistent/personas.toml";
                   };
                 }
               ];

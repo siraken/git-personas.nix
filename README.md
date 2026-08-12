@@ -1,22 +1,25 @@
-# git-clients.nix
+# git-personas.nix
 
 A home-manager module for people who work across several git forges — a
 personal account, an employer, a client — and want each one's identity and
 credentials confined to its own directory.
 
-The client list lives in a TOML file **outside** the flake and is read at
+A **persona** is a directory plus the identity, credentials, and environment
+that apply inside it. Which persona you are wearing follows from where you are.
+
+The persona list lives in a TOML file **outside** the flake and is read at
 *activation* time, never during evaluation. The flake stays pure (no
-`--impure`), the client's hostnames never enter the repository, and a machine
-without the file simply gets no client configuration.
+`--impure`), the hostnames never enter the repository, and a machine without
+the file simply gets no persona configuration.
 
 ## What it does
 
-For every client entry the module can:
+For every persona the module can:
 
-- **include a hand-maintained gitconfig** for repositories under the client's
-  directory, via `includeIf "gitdir:…"` — the usual per-directory identity trick;
+- **include a hand-maintained gitconfig** for repositories under its directory,
+  via `includeIf "gitdir:…"` — the usual per-directory identity trick;
 - **confine a stored credential to that directory**, by emptying the credential
-  helper list for the client's hosts globally and putting it back only inside
+  helper list for the persona's hosts globally and putting it back only inside
   the include. Outside the directory git cannot reach the stored token at all;
 - **export environment variables** for the directory, by writing a direnv
   `.envrc` at its root — useful for tools that key off a host, such as
@@ -26,8 +29,8 @@ For every client entry the module can:
 
 ```nix
 {
-  inputs.git-clients = {
-    url = "github:siraken/git-clients.nix";
+  inputs.git-personas = {
+    url = "github:siraken/git-personas.nix";
     inputs.nixpkgs.follows = "nixpkgs";
     inputs.home-manager.follows = "home-manager";
   };
@@ -37,23 +40,23 @@ For every client entry the module can:
 ```nix
 { config, inputs, ... }:
 {
-  imports = [ inputs.git-clients.homeModules.default ];
+  imports = [ inputs.git-personas.homeModules.default ];
 
-  programs.gitClients = {
+  programs.gitPersonas = {
     enable = true;
-    clientsFile = "${config.home.homeDirectory}/dotfiles/clients.toml";
-    # reposRoot = "${config.home.homeDirectory}/repos";            # default
-    # configDir = "${config.home.homeDirectory}/.config/git.custom"; # default
+    personasFile = "${config.home.homeDirectory}/dotfiles/personas.toml";
+    # reposRoot = "${config.home.homeDirectory}/repos";              # default
+    # configDir = "${config.home.homeDirectory}/.config/git.custom";  # default
   };
 }
 ```
 
-### The clients file
+### The personas file
 
 TOML.
 
 ```toml
-[[gitClients]]
+[[gitPersonas]]
 dir = "github.com/example-org"
 configFile = "example-org"
 credentialHosts = ["https://git.example.com"]
@@ -62,15 +65,15 @@ env.GITLAB_HOST = "git.example.com"
 
 | field | required | meaning |
 | --- | --- | --- |
-| `dir` | yes | Directory holding the client's repositories, relative to `reposRoot`. |
+| `dir` | yes | Directory holding the persona's repositories, relative to `reposRoot`. |
 | `configFile` | yes | Gitconfig for those repositories, relative to `configDir`. You write this file yourself. |
 | `credentialHosts` | no | Hosts whose stored credential must only be reachable from `dir`. |
 | `env` | no | Variables exported by a generated `.envrc` at the root of `dir`. |
 
-Keep the file out of version control if the client names are sensitive; it is
+Keep the file out of version control if the hostnames are sensitive; it is
 never read at evaluation time, so nothing here reaches the store.
 
-The per-client gitconfig is yours to maintain. To make a confined credential
+The per-persona gitconfig is yours to maintain. To make a confined credential
 usable, put the helper back in it:
 
 ```gitconfig
@@ -86,12 +89,12 @@ usable, put the helper back in it:
 
 | option | default | |
 | --- | --- | --- |
-| `programs.gitClients.enable` | `false` | |
-| `programs.gitClients.clientsFile` | — | Absolute path to the TOML file. |
-| `programs.gitClients.reposRoot` | `~/repos` | What `dir` is resolved against, typically a ghq root. |
-| `programs.gitClients.configDir` | `~/.config/git.custom` | Where the per-client gitconfigs and the generated include live. |
-| `programs.gitClients.includeFile` | `<configDir>/clients.gitconfig` | The generated include. |
-| `programs.gitClients.writeEnvrc` | `true` | Whether to write `.envrc` files. |
+| `programs.gitPersonas.enable` | `false` | |
+| `programs.gitPersonas.personasFile` | — | Absolute path to the TOML file. |
+| `programs.gitPersonas.reposRoot` | `~/repos` | What `dir` is resolved against, typically a ghq root. |
+| `programs.gitPersonas.configDir` | `~/.config/git.custom` | Where the per-persona gitconfigs and the generated include live. |
+| `programs.gitPersonas.includeFile` | `<configDir>/personas.gitconfig` | The generated include. |
+| `programs.gitPersonas.writeEnvrc` | `true` | Whether to write `.envrc` files. |
 
 ## Things to know
 
@@ -107,6 +110,8 @@ usable, put the helper back in it:
   contents change.
 - An `.envrc` this module did not write is never overwritten — it is left alone
   with a warning on stderr.
+- A malformed personas file aborts the activation step without touching the
+  configuration already in place.
 
 ## License
 
