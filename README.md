@@ -4,7 +4,7 @@ A home-manager module for people who work across several git forges — a
 personal account, an employer, a client — and want each one's identity and
 credentials confined to its own directory.
 
-The client list lives in a JSON file **outside** the flake and is read at
+The client list lives in a TOML file **outside** the flake and is read at
 *activation* time, never during evaluation. The flake stays pure (no
 `--impure`), the client's hostnames never enter the repository, and a machine
 without the file simply gets no client configuration.
@@ -50,7 +50,7 @@ For every client entry the module can:
 
 ### The clients file
 
-TOML when the file name ends in `.toml`, JSON otherwise.
+TOML.
 
 ```toml
 [[gitClients]]
@@ -87,7 +87,7 @@ usable, put the helper back in it:
 | option | default | |
 | --- | --- | --- |
 | `programs.gitClients.enable` | `false` | |
-| `programs.gitClients.clientsFile` | — | Absolute path to the JSON file. |
+| `programs.gitClients.clientsFile` | — | Absolute path to the TOML file. |
 | `programs.gitClients.reposRoot` | `~/repos` | What `dir` is resolved against, typically a ghq root. |
 | `programs.gitClients.configDir` | `~/.config/git.custom` | Where the per-client gitconfigs and the generated include live. |
 | `programs.gitClients.includeFile` | `<configDir>/clients.gitconfig` | The generated include. |
