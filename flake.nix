@@ -28,9 +28,11 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
+      # `import`ed rather than passed as a path: `nix flake check` requires a
+      # module output to be a function or an attribute set.
       homeModules = {
-        default = ./modules/git-clients.nix;
-        gitClients = ./modules/git-clients.nix;
+        default = import ./modules/git-clients.nix;
+        gitClients = import ./modules/git-clients.nix;
       };
 
       checks = forAllSystems (
