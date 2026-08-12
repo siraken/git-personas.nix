@@ -113,4 +113,4 @@ usable, put the helper back in it:
 
 ## License
 
-MIT
+[MIT](LICENSE)
