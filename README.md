@@ -41,7 +41,7 @@ For every client entry the module can:
 
   programs.gitClients = {
     enable = true;
-    clientsFile = "${config.home.homeDirectory}/dotfiles/secrets.json";
+    clientsFile = "${config.home.homeDirectory}/dotfiles/clients.toml";
     # reposRoot = "${config.home.homeDirectory}/repos";            # default
     # configDir = "${config.home.homeDirectory}/.config/git.custom"; # default
   };
@@ -50,17 +50,14 @@ For every client entry the module can:
 
 ### The clients file
 
-```json
-{
-  "gitClients": [
-    {
-      "dir": "github.com/example-org",
-      "configFile": "example-org",
-      "credentialHosts": ["https://git.example.com"],
-      "env": { "GITLAB_HOST": "git.example.com" }
-    }
-  ]
-}
+TOML when the file name ends in `.toml`, JSON otherwise.
+
+```toml
+[[gitClients]]
+dir = "github.com/example-org"
+configFile = "example-org"
+credentialHosts = ["https://git.example.com"]
+env.GITLAB_HOST = "git.example.com"
 ```
 
 | field | required | meaning |
